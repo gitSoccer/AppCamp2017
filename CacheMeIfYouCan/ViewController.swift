@@ -20,6 +20,7 @@ class ViewController: UIViewController, MKMapViewDelegate, UISearchBarDelegate, 
     @IBOutlet weak var menuButton: UIButton!
     @IBOutlet weak var navbar: UINavigationItem!
     @IBOutlet weak var mapView: MKMapView!
+    @IBOutlet weak var distance: UILabel!
     @IBOutlet weak var search: UISearchBar!
     
     let locationManager = CLLocationManager()
@@ -31,9 +32,11 @@ class ViewController: UIViewController, MKMapViewDelegate, UISearchBarDelegate, 
     var arrayOfInts: [CLLocation] = []
     var encodedString = ""
     var swag = Dictionary<String, String>()
-    //var imageCode = ""
-    //var data: Data!
-    //var decodedImage:UIImage!
+    var locations: Array<CLLocation> = Array()
+    var distances: Array<Double> = Array()
+    var timer = Timer()
+    var awesomePoints = 0
+    var hasVisited = false
     
     @IBAction func logOut(_ sender: UIBarButtonItem)
     {
@@ -72,20 +75,36 @@ class ViewController: UIViewController, MKMapViewDelegate, UISearchBarDelegate, 
             search.endEditing(true)
         }
     }
-    func buttonAni(button: UIButton, direction: Bool)
+    func buttonAniY(button: UIButton, direction: Bool)
     {
         
         var position = button.frame
         if(direction == true)
         {
-            position.origin.y = position.origin.y - 100
+            position.origin.y = position.origin.y - 130
         }
         else
         {
-            position.origin.y = position.origin.y + 100
+            position.origin.y = position.origin.y + 130
         }
         UIView.animate(withDuration: 0.2, animations: { () -> Void in
             button.frame = position
+        })
+    }
+    func buttonAniX(label: UILabel, direction: Bool)
+    {
+        
+        var position = label.frame
+        if(direction == true)
+        {
+            position.origin.x = position.origin.x + 320
+        }
+        else
+        {
+            position.origin.x = position.origin.x - 320
+        }
+        UIView.animate(withDuration: 0.2, animations: { () -> Void in
+            label.frame = position
         })
     }
     func searchBarTextDidEndEditing(_ searchBar: UISearchBar)
@@ -138,7 +157,10 @@ class ViewController: UIViewController, MKMapViewDelegate, UISearchBarDelegate, 
         
         self.mapView.addAnnotation(annotation)
     }
-    
+    func userDistance(from point: CLLocation) -> Double
+    {
+        return currentLocation!.distance(from: point)
+    }
     func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
         if (annotation is MKUserLocation) { return nil }
         let reuseID = "marker"
@@ -177,6 +199,7 @@ class ViewController: UIViewController, MKMapViewDelegate, UISearchBarDelegate, 
                     
                     let date = loc.value(forKey: "timeAccessed") as! String
                     title = loc.value(forKey: "title") as! String
+                    self.locations.append(location)
                     if title != ""
                     {
                         self.setAnnotationAt(location: location, title: title, subtitle: date)
@@ -228,7 +251,7 @@ class ViewController: UIViewController, MKMapViewDelegate, UISearchBarDelegate, 
     }
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+        timer = Timer.scheduledTimer(timeInterval: 0.1, target: self, selector: #selector(update), userInfo: nil, repeats: true)
         let tap = UITapGestureRecognizer(target: self, action: #selector(ViewController.tap(_:)))
         tap.delegate = self
         mapView.addGestureRecognizer(tap)
@@ -249,7 +272,6 @@ class ViewController: UIViewController, MKMapViewDelegate, UISearchBarDelegate, 
             "lon": 0,
             "title": "default",
             ])
-        
         locationManager.delegate = self
         locationManager.requestWhenInUseAuthorization()
         if CLLocationManager.locationServicesEnabled() {
@@ -269,8 +291,6 @@ class ViewController: UIViewController, MKMapViewDelegate, UISearchBarDelegate, 
         addMarkerButton.layer.cornerRadius = addMarkerButton.bounds.size.width/2
         menuButton.layer.cornerRadius = addMarkerButton.bounds.size.width/2
         self.search.isHidden = true
-        // Do any additional setup after loading the view, typically from a nib.
-        //self.window.
         self.navigationController?.navigationBar.titleTextAttributes = [ NSFontAttributeName: UIFont(name: "DamascusBold", size: 30)!]
         self.navigationController?.navigationBar.titleTextAttributes = [NSForegroundColorAttributeName: UIColor.white]
     }
@@ -281,15 +301,17 @@ class ViewController: UIViewController, MKMapViewDelegate, UISearchBarDelegate, 
         {
             if(isUp == false)
             {
-                buttonAni(button: addMarkerButton, direction: true)
-                buttonAni(button: menuButton, direction: true)
+                buttonAniY(button: addMarkerButton, direction: true)
+                buttonAniY(button: menuButton, direction: true)
+                buttonAniX(label: distance, direction: true)
                 isUp = true
             }
             else
             {
                 isUp = false
-                buttonAni(button: addMarkerButton, direction: false)
-                buttonAni(button: menuButton, direction: false)
+                buttonAniY(button: addMarkerButton, direction: false)
+                buttonAniY(button: menuButton, direction: false)
+                buttonAniX(label: distance, direction: false)
             }
         }
         else
@@ -323,6 +345,37 @@ class ViewController: UIViewController, MKMapViewDelegate, UISearchBarDelegate, 
     func dismissKeyboard(_ gestureRecognizer: UIGestureRecognizer) {
         self.search.endEditing(true)
         self.search.isHidden = true
+    }
+    func update()
+    {
+        for x in locations
+        {
+            let distanceToLocation = userDistance(from: x)
+            distances.append(distanceToLocation)
+        }
+        let distance = distances.min()
+        if distance != nil
+        {
+            self.distance.text = "Distance to nearest cache: " + String(describing: Int(distance!)) + " meters"
+            if distance! <= 10.0 && hasVisited == false
+            {
+                ref.child("users").observeSingleEvent(of: .value, with: { (snapshot) in
+                    let userDict = snapshot.value as? NSDictionary
+                    for x in (userDict?.allKeys)!
+                    {
+                        let user = userDict?[x] as! NSDictionary
+                        if String(describing: userDict?[x]) == MyVariables.username
+                        {
+                            self.awesomePoints = user.value(forKey: "awesomePoints") as! Int
+                        }
+                    }
+                    
+                })
+                awesomePoints += 1
+                ref.child("users").child(MyVariables.username).setValue(["awesomePoints": awesomePoints])
+                hasVisited = true
+            }
+        }
     }
 }
 
