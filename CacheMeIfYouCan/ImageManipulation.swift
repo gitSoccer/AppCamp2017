@@ -29,7 +29,7 @@ class ImageManipulation: NSObject
         context.addLine(to: CGPoint(x: 0, y: 0))
         context.fillPath()
 
-        image.draw(in: CGRect(x: newWidth * 0.1, y: newHeight * 0.05, width: newWidth * 0.8, height: newHeight * 0.7))
+        image.draw(in: CGRect(x: newWidth * 0.025, y: newHeight * 0.025, width: newWidth * 0.95, height: newHeight * 0.95))
         let newImage = UIGraphicsGetImageFromCurrentImageContext()
         
         UIGraphicsEndImageContext()
@@ -50,19 +50,4 @@ class ImageManipulation: NSObject
         
         return newImage!
     }
-//    static func prepareImage(image: UIImage, newWidth: CGFloat) -> UIImage
-//    {
-//        let scale = newWidth / image.size.width
-//        let newHeight = image.size.height * scale
-//        
-//        UIGraphicsBeginImageContext(CGSize(width: newWidth, height: newHeight * 2))
-//        
-//        image.draw(in: CGRect(x: newWidth, y: newHeight, width: newWidth, height: newHeight))
-//
-//        let newImage = UIGraphicsGetImageFromCurrentImageContext()
-//        
-//        UIGraphicsEndImageContext()
-//        
-//        return newImage!
-//    }
 }

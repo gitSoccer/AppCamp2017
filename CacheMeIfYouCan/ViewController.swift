@@ -165,22 +165,22 @@ class ViewController: UIViewController, MKMapViewDelegate, UISearchBarDelegate, 
             for x in (locDict?.allKeys)!
             {
                 if String(describing: x) == "Default"{
-                        continue
+                    continue
                 }
                 var title = ""
                 let loc = locDict?[x] as! NSDictionary
                 if loc.value(forKey: "lat") != nil && loc.value(forKey: "lon") != nil
                 {
-                        let lat = loc.value(forKey: "lat") as! CLLocationDegrees
-                        let lon = loc.value(forKey: "lon") as! CLLocationDegrees
-                        let location = CLLocation(latitude: lat, longitude: lon)
-                        
-                        let date = loc.value(forKey: "timeAccessed") as! String
-                        title = loc.value(forKey: "title") as! String
-                        if title != ""
-                        {
-                            self.setAnnotationAt(location: location, title: title, subtitle: date)
-                        }
+                    let lat = loc.value(forKey: "lat") as! CLLocationDegrees
+                    let lon = loc.value(forKey: "lon") as! CLLocationDegrees
+                    let location = CLLocation(latitude: lat, longitude: lon)
+                    
+                    let date = loc.value(forKey: "timeAccessed") as! String
+                    title = loc.value(forKey: "title") as! String
+                    if title != ""
+                    {
+                        self.setAnnotationAt(location: location, title: title, subtitle: date)
+                    }
                 }
                 else
                 {
