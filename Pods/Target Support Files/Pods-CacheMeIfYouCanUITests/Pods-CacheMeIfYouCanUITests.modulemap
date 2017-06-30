@@ -1,0 +1,6 @@
+framework module Pods_CacheMeIfYouCanUITests {
+  umbrella header "Pods-CacheMeIfYouCanUITests-umbrella.h"
+
+  export *
+  module * { export * }
+}
