@@ -95,11 +95,11 @@ class ViewController: UIViewController, MKMapViewDelegate, UISearchBarDelegate, 
         var position = label.frame
         if(direction == true)
         {
-            position.origin.x = position.origin.x + 320
+            position.origin.x = position.origin.x + 375
         }
         else
         {
-            position.origin.x = position.origin.x - 320
+            position.origin.x = position.origin.x - 375
         }
         UIView.animate(withDuration: 0.2, animations: { () -> Void in
             label.frame = position
@@ -157,7 +157,10 @@ class ViewController: UIViewController, MKMapViewDelegate, UISearchBarDelegate, 
     }
     func userDistance(from point: CLLocation) -> Double
     {
-        return currentLocation!.distance(from: point)
+        if currentLocation != nil {
+            return currentLocation!.distance(from: point)
+        }
+        return 0
     }
     func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
         if (annotation is MKUserLocation) { return nil }
