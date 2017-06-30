@@ -101,7 +101,6 @@ class MapMarkerDetailViewController: UIViewController, UITextViewDelegate,  UIIm
         
         ref = Database.database().reference()
         
-        
         ref.child("users").observeSingleEvent(of: .value, with: { (snapshot) in
             let userDict = snapshot.value as? NSDictionary
             for userName in (userDict?.allKeys)!
@@ -110,7 +109,15 @@ class MapMarkerDetailViewController: UIViewController, UITextViewDelegate,  UIIm
                 if userName as! String == MyVariables.username
                 {
                     let user = userDict?[userName] as! NSDictionary
-                    self.placesCreated = user.value(forKey: "createdPlaces") as! Int
+                    let places = user.value(forKey: "createdPlaces")
+                    
+                    if places != nil
+                    {
+                        self.placesCreated = places as! Int
+                    }
+                    else{
+                        self.ref.child("users").setValue(["createdPlaces": self.placesCreated])
+                    }
                 }
             }
         })

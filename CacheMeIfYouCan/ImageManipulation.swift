@@ -10,7 +10,7 @@ import UIKit
 
 class ImageManipulation: NSObject
 {
-    static func prepareImageAsAnnotation(image: UIImage, newWidth: CGFloat) -> UIImage {
+    static func prepareImageAsAnnotation(image: UIImage, newWidth: CGFloat, color: CGColor) -> UIImage {
         
         let scale = newWidth / image.size.width
         let newHeight = image.size.height * scale
@@ -19,7 +19,6 @@ class ImageManipulation: NSObject
         
         let context = UIGraphicsGetCurrentContext()!
         
-        let color = UIColor(red: 243/255.0, green: 146/255.0, blue: 36/255.0, alpha: 255).cgColor
         context.setFillColor(color)
         context.move(to: CGPoint(x: 0, y: 0))
         context.addLine(to: CGPoint(x: 0, y: newHeight * 0.8))
@@ -29,7 +28,7 @@ class ImageManipulation: NSObject
         context.addLine(to: CGPoint(x: 0, y: 0))
         context.fillPath()
 
-        image.draw(in: CGRect(x: newWidth * 0.025, y: newHeight * 0.025, width: newWidth * 0.95, height: newHeight * 0.95))
+        image.draw(in: CGRect(x: newWidth * 0.05, y: newHeight * 0.05, width: newWidth * 0.90, height: newHeight * 0.70))
         let newImage = UIGraphicsGetImageFromCurrentImageContext()
         
         UIGraphicsEndImageContext()

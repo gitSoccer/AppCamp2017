@@ -22,6 +22,7 @@ class ViewController: UIViewController, MKMapViewDelegate, UISearchBarDelegate, 
     @IBOutlet weak var mapView: MKMapView!
     @IBOutlet weak var distance: UILabel!
     @IBOutlet weak var search: UISearchBar!
+    @IBOutlet weak var points: UILabel!
     
     let locationManager = CLLocationManager()
     var ref: DatabaseReference!
@@ -41,9 +42,6 @@ class ViewController: UIViewController, MKMapViewDelegate, UISearchBarDelegate, 
     @IBAction func logOut(_ sender: UIBarButtonItem)
     {
         let firebaseAuth = Auth.auth()
-        
-        //        let user = firebaseAuth.currentUser
-        //        user?.delete(completion: nil)
         do {
             try firebaseAuth.signOut()
             GIDSignIn.sharedInstance().signOut()
@@ -168,12 +166,12 @@ class ViewController: UIViewController, MKMapViewDelegate, UISearchBarDelegate, 
         var v = mapView.dequeueReusableAnnotationView(withIdentifier: reuseID)
         if v != nil {
             v?.annotation = annotation
-            v?.image = ImageManipulation.prepareImageAsAnnotation(image: decode(data: swag[annotation.title!!]!), newWidth: (50))
+            v?.image = ImageManipulation.prepareImageAsAnnotation(image: decode(data: swag[annotation.title!!]!), newWidth: (40), color: UIColor(red: 243/255.0, green: 146/255.0, blue: 36/255.0, alpha: 255).cgColor)
         } else {
             v = MKAnnotationView(annotation: annotation, reuseIdentifier: reuseID)
             if swag[annotation.title!!] != nil
             {
-                v?.image = ImageManipulation.prepareImageAsAnnotation(image: decode(data: swag[annotation.title!!]!), newWidth: (50))
+                v?.image = ImageManipulation.prepareImageAsAnnotation(image: decode(data: swag[annotation.title!!]!), newWidth: (40), color: UIColor(red: 243/255.0, green: 146/255.0, blue: 36/255.0, alpha: 255).cgColor)
             }
         }
         return v
@@ -260,7 +258,7 @@ class ViewController: UIViewController, MKMapViewDelegate, UISearchBarDelegate, 
         
         ref = Database.database().reference()
         
-        let manipulatedImage = ImageManipulation.prepareImageAsAnnotation(image: UIImage(named: "Cristophe 8.5x11.png")!, newWidth: CGFloat(50))
+        let manipulatedImage = ImageManipulation.prepareImageAsAnnotation(image: UIImage(named: "Cristophe 8.5x11.png")!, newWidth: CGFloat(50), color: UIColor(red: 243/255.0, green: 146/255.0, blue: 36/255.0, alpha: 255).cgColor)
         
         ref.child("locations").child("Default").setValue([
             "image" : encode(image: manipulatedImage),
@@ -275,7 +273,7 @@ class ViewController: UIViewController, MKMapViewDelegate, UISearchBarDelegate, 
         locationManager.delegate = self
         locationManager.requestWhenInUseAuthorization()
         if CLLocationManager.locationServicesEnabled() {
-            locationManager.desiredAccuracy = kCLLocationAccuracyHundredMeters
+            locationManager.desiredAccuracy = kCLLocationAccuracyBest
             locationManager.requestLocation()
         }
         
@@ -297,6 +295,9 @@ class ViewController: UIViewController, MKMapViewDelegate, UISearchBarDelegate, 
     
     func tap(_ gestureRecognizer: UITapGestureRecognizer)
     {
+        
+        
+        
         if(self.search.isHidden == true)
         {
             if(isUp == false)
@@ -313,10 +314,6 @@ class ViewController: UIViewController, MKMapViewDelegate, UISearchBarDelegate, 
                 buttonAniY(button: menuButton, direction: false)
                 buttonAniX(label: distance, direction: false)
             }
-        }
-        else
-        {
-            self.hideKeyboardWhenTappedAround()
         }
     }
     
@@ -336,16 +333,11 @@ class ViewController: UIViewController, MKMapViewDelegate, UISearchBarDelegate, 
         // Dispose of any resources that can be recreated.
     }
     
-    func hideKeyboardWhenTappedAround() {
-        let tap: UITapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(self.dismissKeyboard(_:)))
-        tap.cancelsTouchesInView = false
-        mapView.addGestureRecognizer(tap)
-    }
-    
-    func dismissKeyboard(_ gestureRecognizer: UIGestureRecognizer) {
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         self.search.endEditing(true)
         self.search.isHidden = true
     }
+    
     func update()
     {
         for x in locations
@@ -363,10 +355,12 @@ class ViewController: UIViewController, MKMapViewDelegate, UISearchBarDelegate, 
                     let userDict = snapshot.value as? NSDictionary
                     for x in (userDict?.allKeys)!
                     {
-                        let user = userDict?[x] as! NSDictionary
-                        if String(describing: userDict?[x]) == MyVariables.username
+                        if let user = userDict?[x] as? NSDictionary
                         {
-                            self.awesomePoints = user.value(forKey: "awesomePoints") as! Int
+                            if String(describing: userDict?[x]) == MyVariables.username
+                            {
+                                self.awesomePoints = user.value(forKey: "awesomePoints") as! Int
+                            }
                         }
                     }
                     
@@ -376,6 +370,7 @@ class ViewController: UIViewController, MKMapViewDelegate, UISearchBarDelegate, 
                 hasVisited = true
             }
         }
+        self.points.text = "Awesome Points: " + String(awesomePoints)
     }
 }
 
